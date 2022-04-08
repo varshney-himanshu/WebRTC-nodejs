@@ -1,14 +1,20 @@
 const socket = io().connect("/");
 let myVideoStream;
 
-var peer = new Peer(undefined, {
+const HOST = window.location.host;
+let peerConfig = {
   path: "/peerjs",
-  host: "/",
-  port: "5000",
-});
+  host: HOST === "localhost:5000" ? "/" : HOST,
+  secure: HOST !== "localhost:5000",
+};
+
+if (HOST === "localhost:5000") {
+  peerConfig.port = 5000;
+}
+var peer = new Peer(undefined, peerConfig);
 
 peer.on("open", (id) => {
-  console.log("peer opened:", id);
+  console.log("Peer Opened:", id);
   socket.emit("join-room", ROOM_ID, id);
 });
 
@@ -29,7 +35,6 @@ navigator.mediaDevices
   .then((stream) => {
     myVideoStream = stream;
 
-    console.log(myVideoStream);
     addVideoStream(myVideo, stream);
 
     peer.on("call", (call) => {
